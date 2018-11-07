@@ -1,0 +1,28 @@
+[wordlist]
+path=/Passwords/wordlists/
+optimized_path=/Passwords/wordlists/optimized_wordlists/
+dictionary_wordlist=rockyou.txt
+dictionary_passlist=rockyou.txt
+combination_wordlist=rockyou.txt
+hybrid_list=rockyou.txt
+middle_base_list=rockyou.txt
+thorough_base_list=rockyou.txt
+good_measure_base_list=rockyou.txt
+prince_base_list=rockyou.txt
+
+[masks]
+middle_combinator_masks=["2","4"," ","-","_","+",",",".","&", "$", "@"]
+
+# NOTE - had to remove "%"; figure this out later!
+#thorough_combinator_masks=["0","1","2","3","4","5","6","7","8","9"," ","-","_","+",",","!","#","$","\"","%","&","'","(",")","*",",",".","/",":",";","<","=",">","?","@","[","\\","]","^","`","{","|","}","~"]
+thorough_combinator_masks=["0","1","2","3","4","5","6","7","8","9"," ","-","_","+",",","!","#","$","\"","&","'","(",")","*",",",".","/",":",";","<","=",">","?","@","[","\\","]","^","`","{","|","}","~"]
+
+
+[hashcat]
+# Set temporary potfile to true to use a new potfile for each session
+temporary_potfile=false
+path=/Passwords/hashcat/
+bin=hashcat
+tuning=--force
+
+
