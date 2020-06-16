@@ -89,6 +89,8 @@ class Attack:
         return True
     
     def process_hash_list(self):
+        ### Note - Regex for various hash types: https://github.com/psypanda/hashID/blob/master/prototypes.json
+        
         
         ### NTLM Hashes
         if re.search(r"[a-z0-9A-Z]{32}:[a-z0-9A-Z]{32}:::", self.hash_list[0]):
@@ -123,7 +125,13 @@ class Attack:
             # ?????:mac-ap:mac-client:essid:password
             
             self.results_regex = None
-        
+            
+        ### IKE-PSK hashes - set results regex to none; we will pass all results straight through as plaintext
+        if self.hash_type == '5300' or self.hash_type == '5400':
+            #example output:
+            # g_xr_hex:g_xi_hex:cky_r_hex:cky_i_hex:sai_b_hex:idir_b_hex:ni_b_hex:nr_b_hex:hash:Password
+            
+            self.results_regex = None
         
         #write hash data passed to file
         with open(self.job_id + '.hash', "wb") as handle:
