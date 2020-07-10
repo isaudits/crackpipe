@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 The base module defines the `Attack` class.
 This class has to be inherited to create a new cracking module.
@@ -7,7 +5,7 @@ This class has to be inherited to create a new cracking module.
 Default methods can be overridden in the inheriting module
 """
 
-import ConfigParser
+from configparser import SafeConfigParser
 import logging
 import time
 import re
@@ -76,7 +74,7 @@ class Attack:
         '''
         Gets info from config file
         '''
-        self.config = ConfigParser.SafeConfigParser()
+        self.config = SafeConfigParser()
         self.config.read(self.config_file)
     
     def check_hashtype(self):
@@ -137,7 +135,7 @@ class Attack:
         with open(self.job_id + '.hash', "wb") as handle:
             #handle.write(self.hash_list)
             for item in self.hash_list:
-                handle.write(item+"\n")
+                handle.write(bytes(item+"\n", "UTF-8"))
     
     def crack_passwords(self):
         '''
@@ -186,7 +184,7 @@ class Attack:
             if v == hash or k == key:
                 hash = v
                 self.results.append((k, password))
-                del self.hashes[k]
+                #del self.hashes[k]
 
             #remove found hashes from hash list
             for line in self.hash_list:

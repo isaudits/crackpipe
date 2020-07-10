@@ -1,13 +1,11 @@
-#!/usr/bin/env python
 '''
 Implementation of thorough combinator attack from TrustedSec hate_crack:
 https://github.com/trustedsec/hate_crack
 '''
 
-
 import re
-import base
 import json
+from modules import base
 
 class Attack(base.Attack):
     def init(self):

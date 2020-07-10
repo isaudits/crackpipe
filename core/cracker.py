@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import subprocess
 import shlex
 import threading
@@ -47,34 +45,16 @@ class CrackThread(threading.Thread):
             
             print("\n"+command+"\n")
             
-            '''
-            try:
-                if "|" not in command:
-                    # have to split cmd into list of cmds/args for subprocess to work
-                    # ['cmd', '--arg=arg', 'arg2=arg2']
-                    command=shlex.split(command)
-                    self.output = subprocess.check_output(command, stdin=subprocess.PIPE)
-                else:
-                    print("pipe found in command")
-                    self.output = subprocess.check_output(command, stdin=subprocess.PIPE, shell=True)
-                    
-            except subprocess.CalledProcessError as e:
-                logging.error(e.output)
-            '''
-            
             output = ""
             
             try:
                     
                 process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            
-                # Poll process for new output until finished
-                while True:
+                
+                while process.poll() is None:
                     nextline = process.stdout.readline()
-                    output += nextline
-                    if nextline == '' and process.poll() != None:
-                        break
-                    sys.stdout.write(nextline)
+                    output += nextline.decode('UTF-8')
+                    sys.stdout.buffer.write(nextline)
                     sys.stdout.flush()
                     
                 self.output = output

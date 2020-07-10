@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 Credit: Based on argparsers.py code from Weevely (https://github.com/epinna/weevely3/)
 

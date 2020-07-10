@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import logging
 import os
@@ -50,7 +50,7 @@ def main(args):
                 print("\n\t99\tShow Results\n")
                 
                 try:
-                    selection = input("Enter module selection: ")
+                    selection = int(input("Enter module selection: "))
                 
                     if selection == 99:
                         show_results()

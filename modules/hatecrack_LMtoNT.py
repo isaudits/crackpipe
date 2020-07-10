@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 Implementation of LanMan to NT attack from TrustedSec hate_crack:
 https://github.com/trustedsec/hate_crack
@@ -6,7 +5,7 @@ https://github.com/trustedsec/hate_crack
 
 import re
 import os
-import base
+from modules import base
 
 class Attack(base.Attack):
     def init(self):

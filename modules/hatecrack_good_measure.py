@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 '''
 Implementation of Extra Good Measure chained attack from TrustedSec hate_crack:
 https://github.com/trustedsec/hate_crack
@@ -6,11 +5,9 @@ https://github.com/trustedsec/hate_crack
 combinator -> PasswordsPro ruleset
 
 '''
-
-
 import re
-import base
 import json
+from modules import base
 
 class Attack(base.Attack):
     def init(self):

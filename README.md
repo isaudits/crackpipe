@@ -22,7 +22,7 @@ potfiles for each session (specified in config file).
     - Precompiled binaries: https://hashcat.net/hashcat/
     - Source: https://github.com/hashcat
     - Wiki with tutorials and instructions: https://hashcat.net/wiki/
-* Python 2.7
+* Python 3
     - Uses standard Python libraries and should not require additional packages
 
 # Installation

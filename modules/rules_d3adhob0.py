@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 import re
 import os
-import base
+from modules import base
 
 class Attack(base.Attack):
     def init(self):

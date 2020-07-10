@@ -1,14 +1,12 @@
-#!/usr/bin/env python
 '''
 Implementation of PRINCE attack from TrustedSec hate_crack:
 https://github.com/trustedsec/hate_crack
 '''
 
-
 import re
 import sys
 import os
-import base
+from modules import base
 
 class Attack(base.Attack):
     def init(self):
