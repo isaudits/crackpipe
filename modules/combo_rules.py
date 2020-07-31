@@ -18,28 +18,28 @@ class Attack(base.Attack):
         
         commands=[]
         
-        import rules_best64
+        from modules import rules_best64
         commands += rules_best64.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_hob064
+        from modules import rules_hob064
         commands += rules_hob064.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_passwordspro
+        from modules import rules_passwordspro
         commands += rules_hob064.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_T0XlC
+        from modules import rules_T0XlC
         commands += rules_T0XlC.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_d3ad0ne
+        from modules import rules_d3ad0ne
         commands += rules_d3ad0ne.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_onerule
+        from modules import rules_onerule
         commands += rules_onerule.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_d3adhob0
+        from modules import rules_d3adhob0
         commands += rules_d3adhob0.Attack(self.hash_list, self.hash_type).commands
         
-        import rules_dive
+        from modules import rules_dive
         commands += rules_dive.Attack(self.hash_list, self.hash_type).commands
         
         
