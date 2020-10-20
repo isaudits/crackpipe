@@ -79,6 +79,20 @@ generally will subclass the build_commands method which defines the hashcat comm
 which will be the basis for the attack.
 
 Please feel free to submit additional modules as pull requests.
+
+# Rules
+The following hashcat rulesets are used in various modules:
+
+## Hashcat includes:
+ * best64
+ * d3ad0ne
+ * dive
+ * T0XIC
+ 
+## Additional rules:
+ * d3adhob0 and hob064 - <https://github.com/praetorian-inc/Hob0Rules>
+ * OneRuleToRuleThemAll - <https://github.com/NotSoSecure/password_cracking_rules>
+ * Pentagrule variants - <https://github.com/rarecoil/pantagrule>
 --------------------------------------------------------------------------------
 
 Copyright 2018
