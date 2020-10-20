@@ -19,7 +19,7 @@ class Attack(base.Attack):
         
         commands=[]
         
-        commands.append("{hcat_base_cmd} -r {cwd}/rules/pantagrule.one.hybrid.rule {wordlist}".format(
+        commands.append("{hcat_base_cmd} -r {cwd}/rules/pantagrule.hybrid.royce.rule {wordlist}".format(
                             hcat_base_cmd=self.hcat_base_cmd,
                             cwd=os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir),
                             wordlist=self.config.get("wordlist", "path")+self.config.get("wordlist", "dictionary_wordlist"))
