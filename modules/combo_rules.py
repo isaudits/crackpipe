@@ -36,15 +36,13 @@ class Attack(base.Attack):
         from modules import rules_onerule
         commands += rules_onerule.Attack(self.hash_list, self.hash_type).commands
         
-        from modules import rules_pantagrule_onerule
-        commands += rules_pantagrule_onerule.Attack(self.hash_list, self.hash_type).commands
-        
         from modules import rules_d3adhob0
         commands += rules_d3adhob0.Attack(self.hash_list, self.hash_type).commands
         
         from modules import rules_dive
         commands += rules_dive.Attack(self.hash_list, self.hash_type).commands
         
-        
+        from modules import rules_pantagrule_onerule
+        commands += rules_pantagrule_onerule.Attack(self.hash_list, self.hash_type).commands
         
         self.commands = commands
