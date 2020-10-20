@@ -87,6 +87,7 @@ The following hashcat rulesets are used in various modules:
  * best64
  * d3ad0ne
  * dive
+ * PasswordsPro
  * T0XIC
  
 ## Additional rules:
