@@ -18,9 +18,9 @@ class Attack(base.Attack):
         
         commands=[]
         
-        commands.append("{hcat_base_cmd} -r {hcat_path}/rules/best64.rule -r {hcat_path}/rules/best64.rule {wordlist}".format(
+        commands.append("{hcat_base_cmd} -r {rules_path}/best64.rule -r {rules_path}/best64.rule {wordlist}".format(
                             hcat_base_cmd=self.hcat_base_cmd,
-                            hcat_path=self.config.get("hashcat", "path"),
+                            rules_path=self.rules_path,
                             wordlist=self.config.get("wordlist", "path")+self.config.get("wordlist", "dictionary_wordlist"))
                         )
         

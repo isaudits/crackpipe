@@ -24,3 +24,5 @@ path=/usr/local/bin/
 bin=hashcat
 tuning=--force -O
 utils_path=/Passwords/hashcat-utils
+rules_path=/usr/local/share/doc/hashcat/rules
+masks_path=/usr/local/share/doc/hashcat/masks

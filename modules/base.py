@@ -32,21 +32,33 @@ class Attack:
         self.output = ''
         self.results_regex = '([0-9a-f]{16,}):(.*)' #standard hashcat output of hash:password
         self.results = []
+        self.hashcat_tuning = ''
+        self.hashcat_path = ''
+        self.rules_path = ''
+        self.masks_path = ''
         
         
         self.read_config()
+
+        self.hashcat_path = self.config.get("hashcat", "path")
+        self.hashcat_bin = self.config.get("hashcat", "bin")
+        self.hashcat_tuning = self.config.get("hashcat", "tuning")
+        self.rules_path = self.config.get("hashcat", "rules_path")
+        self.masks_path = self.config.get("hashcat", "masks_path")
+        self.rules_path = self.config.get("hashcat", "rules_path")
+        
         
         if self.config.getboolean("hashcat", "temporary_potfile"):
             self.hcat_base_cmd = "{hcat_bin} -m {hash_type} --potfile-path [potfile] {tuning} [hashfile]".format(
-                                    hcat_bin=os.path.join(self.config.get("hashcat", "path"), self.config.get("hashcat", "bin")),
+                                    hcat_bin=os.path.join(self.hashcat_path, self.hashcat_bin),
                                     hash_type=self.hash_type,
-                                    tuning=self.config.get("hashcat", "tuning"),
+                                    tuning=self.hashcat_tuning,
                                     )
         else:
             self.hcat_base_cmd = "{hcat_bin} -m {hash_type} {tuning} [hashfile]".format(
-                                    hcat_bin=os.path.join(self.config.get("hashcat", "path"), self.config.get("hashcat", "bin")),
+                                    hcat_bin=os.path.join(self.hashcat_path, self.hashcat_bin),
                                     hash_type=self.hash_type,
-                                    tuning=self.config.get("hashcat", "tuning"),
+                                    tuning=self.hashcat_tuning,
                                     )
         
         ### Add --username flag for IPMI hashes - https://blog.rapid7.com/2013/07/02/a-penetration-testers-guide-to-ipmi/
