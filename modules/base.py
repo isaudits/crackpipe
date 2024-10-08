@@ -5,7 +5,7 @@ This class has to be inherited to create a new cracking module.
 Default methods can be overridden in the inheriting module
 """
 
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import logging
 import time
 import re
@@ -86,7 +86,7 @@ class Attack:
         '''
         Gets info from config file
         '''
-        self.config = SafeConfigParser()
+        self.config = ConfigParser()
         self.config.read(self.config_file)
     
     def check_hashtype(self):

@@ -49,6 +49,8 @@ def main(args):
                 
                 print("\n\t99\tShow Results\n")
                 
+                module = None # Ensure module is defined before try block
+                
                 try:
                     selection = int(input("Enter module selection: "))
                 
@@ -56,9 +58,14 @@ def main(args):
                         show_results()
                     else:
                         try:
-                            module = importlib.import_module("modules." + selections.get(selection))
-                        except:
-                            print("Module not found...")
+                            module_name = "modules." + selections.get(selection)
+                            module = importlib.import_module(module_name)
+                        except ModuleNotFoundError as e:
+                            print(f"Module not found: {e}")
+                        except ImportError as e:
+                            print(f"Import error: {e}")
+                        except Exception as e:
+                            print(f"Unexpected error: {e}")
                     
                         if module:
                             attack = module.Attack(hash_list, hash_type)
