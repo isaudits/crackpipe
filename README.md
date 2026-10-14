@@ -84,7 +84,7 @@ Please feel free to submit additional modules as pull requests.
 The following hashcat rulesets are used in various modules:
 
 ## Hashcat includes:
- * best64
+ * best66
  * d3ad0ne
  * dive
  * PasswordsPro

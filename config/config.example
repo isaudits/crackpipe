@@ -20,9 +20,14 @@ thorough_combinator_masks=["0","1","2","3","4","5","6","7","8","9"," ","-","_","
 [hashcat]
 # Set temporary potfile to true to use a new potfile for each session
 temporary_potfile=false
+# path/bin are optional: if unset, hashcat is found on your PATH.
+# Set them only for a non-standard install location.
 path=/usr/local/bin/
 bin=hashcat
 tuning=--force -O
 utils_path=/Passwords/hashcat-utils
-rules_path=/usr/local/share/doc/hashcat/rules
-masks_path=/usr/local/share/doc/hashcat/masks
+# rules_path/masks_path are optional. "auto" detects them from the hashcat
+# install (any install method); you can also give an absolute path or one
+# relative to the repo root (the bundled rules/ and masks/ dirs).
+rules_path=auto
+masks_path=auto

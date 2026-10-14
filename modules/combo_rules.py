@@ -18,8 +18,8 @@ class Attack(base.Attack):
         
         commands=[]
         
-        from modules import rules_best64
-        commands += rules_best64.Attack(self.hash_list, self.hash_type).commands
+        from modules import rules_best66
+        commands += rules_best66.Attack(self.hash_list, self.hash_type).commands
         
         from modules import rules_hob064
         commands += rules_hob064.Attack(self.hash_list, self.hash_type).commands

@@ -10,6 +10,7 @@ import logging
 import time
 import re
 import os
+import shutil
 from core import messages
 from core import cracker
 
@@ -49,23 +50,27 @@ class Attack:
                 print("Auto-detected hash type: -m " + detected)
                 self.hash_type = detected
 
-        self.hashcat_path = self.config.get("hashcat", "path")
-        self.hashcat_bin = self.config.get("hashcat", "bin")
-        self.hashcat_tuning = self.config.get("hashcat", "tuning")
-        self.rules_path = self.config.get("hashcat", "rules_path")
-        self.masks_path = self.config.get("hashcat", "masks_path")
-        self.rules_path = self.config.get("hashcat", "rules_path")
+        # path/bin are optional: unset means "find hashcat on PATH". Set them
+        # only for a non-standard install location.
+        self.hashcat_path = self.config.get("hashcat", "path", fallback="")
+        self.hashcat_bin = self.config.get("hashcat", "bin", fallback="hashcat")
+        self.hashcat_tuning = self.config.get("hashcat", "tuning", fallback="")
+        self.hashcat_binary = self.resolve_hashcat_binary()
+        # rules_path/masks_path are optional and default to "auto" (detect from
+        # the hashcat install). May also be absolute or relative to the repo.
+        self.rules_path = self.resolve_data_path(self.config.get("hashcat", "rules_path", fallback="auto"), "rules")
+        self.masks_path = self.resolve_data_path(self.config.get("hashcat", "masks_path", fallback="auto"), "masks")
+
         
-        
-        if self.config.getboolean("hashcat", "temporary_potfile"):
+        if self.config.getboolean("hashcat", "temporary_potfile", fallback=False):
             self.hcat_base_cmd = "{hcat_bin} -m {hash_type} --potfile-path [potfile] {tuning} [hashfile]".format(
-                                    hcat_bin=os.path.join(self.hashcat_path, self.hashcat_bin),
+                                    hcat_bin=self.hashcat_binary,
                                     hash_type=self.hash_type,
                                     tuning=self.hashcat_tuning,
                                     )
         else:
             self.hcat_base_cmd = "{hcat_bin} -m {hash_type} {tuning} [hashfile]".format(
-                                    hcat_bin=os.path.join(self.hashcat_path, self.hashcat_bin),
+                                    hcat_bin=self.hashcat_binary,
                                     hash_type=self.hash_type,
                                     tuning=self.hashcat_tuning,
                                     )
@@ -97,7 +102,71 @@ class Attack:
         '''
         self.config = ConfigParser()
         self.config.read(self.config_file)
-    
+
+    def resolve_hashcat_binary(self):
+        '''
+        Resolve the hashcat executable. Prefers the configured path/bin, then a
+        PATH lookup, so an unset/stale config still works for a standard install.
+        '''
+        candidate = os.path.join(self.hashcat_path, self.hashcat_bin)
+        if os.path.isfile(candidate):
+            return candidate
+        return shutil.which(self.hashcat_bin) or shutil.which('hashcat') or candidate
+
+    def resolve_data_path(self, value, subdir):
+        '''
+        Resolve a configured rules/masks path. Accepts:
+          - "auto": detect the directory from the hashcat install
+          - an absolute path: used as-is
+          - a relative path: resolved against the repo root (bundled dirs)
+        '''
+        value = (value or '').strip()
+        repo_root = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
+
+        if value.lower() == 'auto':
+            detected = self.detect_hashcat_data_dir(subdir)
+            if detected:
+                return detected
+            # fall back to the repo's bundled dir if detection fails
+            return os.path.normpath(os.path.join(repo_root, subdir))
+
+        if os.path.isabs(value):
+            return value
+
+        return os.path.normpath(os.path.join(repo_root, value))
+
+    def detect_hashcat_data_dir(self, subdir):
+        '''
+        Locate hashcat's bundled data directory (e.g. "rules" or "masks") by
+        resolving the hashcat binary to its real location and checking the
+        share paths relative to the install prefix. Works regardless of the
+        install method (Homebrew on Intel/ARM, Linux packages, manual builds).
+        Returns the directory path, or None if it can't be found.
+        '''
+        binary = self.hashcat_binary
+
+        candidates = []
+        if binary and os.path.isfile(binary):
+            # .../<prefix>/bin/hashcat -> <prefix>
+            prefix = os.path.dirname(os.path.dirname(os.path.realpath(binary)))
+            candidates.append(os.path.join(prefix, 'share', 'doc', 'hashcat', subdir))
+            candidates.append(os.path.join(prefix, 'share', 'hashcat', subdir))
+
+        # common system locations as a fallback
+        candidates += [
+            '/opt/homebrew/share/hashcat/' + subdir,
+            '/usr/local/share/hashcat/' + subdir,
+            '/usr/share/hashcat/' + subdir,
+            '/usr/local/share/doc/hashcat/' + subdir,
+        ]
+
+        for candidate in candidates:
+            if os.path.isdir(candidate):
+                return candidate
+
+        logging.warning("Could not auto-detect hashcat %s directory", subdir)
+        return None
+
     def check_hashtype(self):
         '''
         Checks hashtype against accepted hash types from config file; returns
