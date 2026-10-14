@@ -23,7 +23,7 @@ class CrackThread(threading.Thread):
                      command runs (deduped, $HEX[...] decoded); lets a later stage recycle earlier cracks
     '''
 
-    def __init__(self, job_id, hash_type, hash_list, commands):
+    def __init__(self, job_id, hash_type, hash_list, commands, cleanup=True):
         threading.Thread.__init__(self)
         self.job_id = job_id
         self.hash_type = hash_type
@@ -35,10 +35,25 @@ class CrackThread(threading.Thread):
         self.working_file = job_id + '.working'
         self.output = ''
         self.complete = False
+        # Multi-pass attacks run several CrackThreads over the same job and keep
+        # the temp files (.out/.hash/...) between passes; they pass cleanup=False
+        # on all but the final pass.
+        self.cleanup = cleanup
         
         logging.info("Processing request " + job_id + " with hash type " + hash_type)
         logging.debug("CrackThread is initialized - now we have to process hash list")
 
+
+    def cracked_count(self):
+        '''
+        Number of cracked hashes recorded so far (non-blank lines in {job}.out).
+        Used by multi-pass attacks to tell when a loop stops making progress.
+        '''
+        try:
+            with open(os.path.join(os.getcwd(), self.out_file), "r", errors="replace") as handle:
+                return sum(1 for line in handle if line.strip())
+        except FileNotFoundError:
+            return 0
 
     def build_working_file(self):
         '''
@@ -118,13 +133,15 @@ class CrackThread(threading.Thread):
                         
             
         self.complete = True
-        print("\n\nCracking session " + self.job_id + " is complete...")
-        
-        # remove temp files which start with the current job ID
-        files = os.listdir(".")
-        for file in files:
-            if file.startswith(self.job_id+"."):
-                os.remove(file)
+
+        if self.cleanup:
+            print("\n\nCracking session " + self.job_id + " is complete...")
+
+            # remove temp files which start with the current job ID
+            files = os.listdir(".")
+            for file in files:
+                if file.startswith(self.job_id+"."):
+                    os.remove(file)
         
 
         

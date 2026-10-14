@@ -305,23 +305,30 @@ class Attack:
         Creates a CrackThread object and passes the id, file, and hash type to it.
         Returns the id so that results can be obtained later.
         '''
+        message = "Request rejected."
         if self.check_hashtype():
             message = "Request accepted."
-            
-            self.process_hash_list()
 
-            self.crack_thread = cracker.CrackThread(self.job_id, self.hash_type, self.hash_list, self.commands)
-            self.crack_thread.start()
-            
-            # Join the thread so it does not terminate until this function does
-            # otherwise, we can't get the output
-            self.crack_thread.join()
-            self.output = self.crack_thread.output
-            
+            self.process_hash_list()
+            self.run_attack()
             self.process_output()
 
         return self.job_id, message
-    
+
+    def run_attack(self):
+        '''
+        Run the module's command list in a single CrackThread pass, capturing the
+        output. Multi-pass attacks (e.g. fingerprint) override this to loop,
+        using CrackThread(cleanup=False) and cracked_count() between passes.
+        '''
+        self.crack_thread = cracker.CrackThread(self.job_id, self.hash_type, self.hash_list, self.commands)
+        self.crack_thread.start()
+
+        # Join the thread so it does not terminate until this function does
+        # otherwise, we can't get the output
+        self.crack_thread.join()
+        self.output = self.crack_thread.output
+
     def process_output(self):
         
         if self.results_regex:

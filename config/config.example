@@ -51,3 +51,8 @@ rules=["OneRuleToRuleThemAll.rule", "best66.rule", "dive.rule"]
 target_time=14400
 pps=14000000000
 min_length=7
+
+# Optional. Fingerprint attack: cap on expand+combinator iterations (it also
+# stops early once a pass cracks nothing new).
+[fingerprint]
+max_iterations=10
