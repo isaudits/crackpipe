@@ -282,12 +282,33 @@ class Attack:
             # no regex - process as plaintext
             self.process_hash("","","",self.output)
             
+    def decode_hex(self, value):
+        '''
+        hashcat wraps a plaintext in $HEX[...] when it contains bytes it can't
+        print (non-ASCII, or a literal colon). Decode it back to text so results
+        and recycled dictionaries hold the real password, not the wrapper.
+        '''
+        match = re.fullmatch(r'\$HEX\[([0-9a-fA-F]*)\]', value or '')
+        if not match:
+            return value
+        try:
+            raw = bytes.fromhex(match.group(1))
+        except ValueError:
+            return value
+        try:
+            return raw.decode('utf-8')
+        except UnicodeDecodeError:
+            return raw.decode('latin-1')
+
     def process_hash(self, hash, user, password, plaintext=""):
         '''plaintext variable is for simple output where hashes are not stored in
         the hash table (such as wifi hashes); if this is the case, just append
         output in plaintext field to the results table and spit it out!
         '''
-        
+
+        password = self.decode_hex(password)
+        plaintext = self.decode_hex(plaintext)
+
         if plaintext:
             if not plaintext in self.results:
                 self.results.append(plaintext)

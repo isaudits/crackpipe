@@ -31,3 +31,8 @@ utils_path=/Passwords/hashcat-utils
 # relative to the repo root (the bundled rules/ and masks/ dirs).
 rules_path=auto
 masks_path=auto
+
+# Optional. Length bounds for the brute force (mask increment) attack.
+[bruteforce]
+min_length=1
+max_length=7
