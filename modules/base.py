@@ -203,19 +203,35 @@ class Attack:
         ### Note - Regex for various hash types: https://github.com/psypanda/hashID/blob/master/prototypes.json
         
         
-        ### NTLM Hashes
+        ### NTLM Hashes (PWDUMP: user:rid:lm:nt:::)
+        nt_hashes = None
         if re.search(r"[a-z0-9A-Z]{32}:[a-z0-9A-Z]{32}:::", self.hash_list[0]):
             print("PWDUMP format detected...")
-            
+
+            empty_lm = "aad3b435b51404eeaad3b435b51404ee"
+            nt_hashes = []
+            nt_seen = set()
+            lm_hashes = []
+            lm_seen = set()
             for line in self.hash_list:
-                user, uid, lm, ntlm, comment, homedir, endofline = line.split(':')
-                key = user
-                self.hashes[key] = ntlm.lower()
-                #if self.hash_type.lower()[-2:] == 'nt':
-                #    self.hashes[key] = ntlm.lower()
-                #else:
-                #    self.hashes[key] = lm.lower()
-        
+                fields = line.split(':')
+                if len(fields) < 4:
+                    continue
+                user, lm, ntlm = fields[0], fields[2].lower(), fields[3].lower()
+                self.hashes[user] = ntlm
+                if ntlm not in nt_seen:
+                    nt_seen.add(ntlm)
+                    nt_hashes.append(ntlm)
+                if lm and lm != empty_lm and lm not in lm_seen:
+                    lm_seen.add(lm)
+                    lm_hashes.append(lm)
+
+            # Split the LM hashes out for the opt-in LM->NT module.
+            # The standard -m 1000 modules crack the NT hashes written below.
+            with open(self.job_id + '.lm', "w") as handle:
+                if lm_hashes:
+                    handle.write("\n".join(lm_hashes) + "\n")
+
         
         ### NetNTLMv2 Hashes        
         if re.search(r".*:.*:.*:[a-z0-9A-Z]{16}:[a-z0-9A-Z]{32}:[a-z0-9A-Z]*", self.hash_list[0]):
@@ -244,10 +260,11 @@ class Attack:
             
             self.results_regex = None
         
-        #write hash data passed to file
+        # Write the hashes the attack will run against. For PWDUMP this is the
+        # deduped NT hashes (so -m 1000 can parse them); otherwise the raw list.
+        hashfile_lines = nt_hashes if nt_hashes is not None else self.hash_list
         with open(self.job_id + '.hash', "wb") as handle:
-            #handle.write(self.hash_list)
-            for item in self.hash_list:
+            for item in hashfile_lines:
                 handle.write(bytes(item+"\n", "UTF-8"))
     
     def crack_passwords(self):
