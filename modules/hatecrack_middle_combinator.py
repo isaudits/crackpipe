@@ -30,11 +30,11 @@ class Attack(base.Attack):
         
         
         
-            commands.append("{hcat_base_cmd} -a 1 -j '${middle_mask}' {left} {right}".format(
+            commands.append("{hcat_base_cmd} -a 1 -j '{middle_mask}' {left} {right}".format(
                                 hcat_base_cmd=self.hcat_base_cmd,
                                 left=self.config.get("wordlist", "path")+self.config.get("wordlist", "middle_base_list"),
                                 right=self.config.get("wordlist", "path")+self.config.get("wordlist", "middle_base_list"),
-                                middle_mask=masks[x]
+                                middle_mask=self.expand_mask(masks[x])
                                 )
                             )
             

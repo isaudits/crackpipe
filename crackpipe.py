@@ -7,6 +7,7 @@ import importlib
 
 import modules      #import modules package so we can access list of modules with modules.__all__
 
+from modules import base
 from core.argparsers import CliParser
 
 hash_list=[]
@@ -39,7 +40,20 @@ def main(args):
     
     else:
         logging.debug("Running in standalone mode...\n")
-        
+
+        # Sweep the potfile up front: report and collect hashes already cracked
+        # in previous sessions, so they're not re-attacked or counted as failures.
+        if hash_list:
+            sweep = base.Attack(hash_list, hash_type)
+            sweep.process_hash_list()
+            sweep.harvest()
+            if sweep.cracked_count:
+                print("Found %d hash(es) already cracked in the potfile.\n" % sweep.cracked_count)
+                hash_list = sweep.hash_list
+                for result in sweep.results:
+                    if result not in results:
+                        results.append(result)
+
         try:
             while 1:
         

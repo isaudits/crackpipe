@@ -24,6 +24,8 @@ temporary_potfile=false
 # Set them only for a non-standard install location.
 path=/usr/local/bin/
 bin=hashcat
+# tuning: -O (optimized kernels) is faster but caps candidate length (~31 for
+# most modes); drop -O if you need longer brute-force/mask keyspaces.
 tuning=--force -O
 # utils_path: "auto" uses the bundled tools/hashcat-utils submodule; or set a path.
 utils_path=auto

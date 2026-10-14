@@ -66,16 +66,20 @@ class Attack:
         self.utils_path = self.resolve_vendored(self.config.get("hashcat", "utils_path", fallback="auto"), "tools/hashcat-utils")
 
         
+        # Name the hashcat session after the job so concurrent runs don't clash
+        # and an interrupted attack can be resumed with --restore --session <id>.
         if self.config.getboolean("hashcat", "temporary_potfile", fallback=False):
-            self.hcat_base_cmd = "{hcat_bin} -m {hash_type} --potfile-path [potfile] {tuning} [hashfile]".format(
+            self.hcat_base_cmd = "{hcat_bin} -m {hash_type} --session {session} --potfile-path [potfile] {tuning} [hashfile]".format(
                                     hcat_bin=self.hashcat_binary,
                                     hash_type=self.hash_type,
+                                    session=self.job_id,
                                     tuning=self.hashcat_tuning,
                                     )
         else:
-            self.hcat_base_cmd = "{hcat_bin} -m {hash_type} {tuning} [hashfile]".format(
+            self.hcat_base_cmd = "{hcat_bin} -m {hash_type} --session {session} {tuning} [hashfile]".format(
                                     hcat_bin=self.hashcat_binary,
                                     hash_type=self.hash_type,
+                                    session=self.job_id,
                                     tuning=self.hashcat_tuning,
                                     )
         
@@ -335,6 +339,14 @@ class Attack:
         dictionaries hold the real password. See core.util.decode_hex.
         '''
         return util.decode_hex(value)
+
+    def expand_mask(self, mask):
+        '''
+        Turn a combinator mask into a hashcat -j/-k rule: each character becomes
+        a "$c" append, so "2" -> "$2" and "ab" -> "$a$b". Single-character masks
+        are unchanged in effect; multi-character masks now work correctly.
+        '''
+        return "$" + "$".join(mask)
 
     def record_cracked(self, cracked):
         '''
