@@ -44,7 +44,7 @@ class Attack(base.Attack):
 
         #Use combinator app to create a combined dictionary of cracked password halves
         commands.append("{utils_path}/bin/combinator.bin {hash_file}.working {hash_file}.working | sort -u > {hash_file}.combined".format(
-                            utils_path=self.config.get("hashcat", "utils_path"),
+                            utils_path=self.utils_path,
                             hash_file=self.job_id,
                             )
                         )

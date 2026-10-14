@@ -27,9 +27,12 @@ potfiles for each session (specified in config file).
 
 # Installation
 
-Just clone from repo and set up your config file:
+Clone the repo with its submodules, build the bundled tools, and set up your config file:
 
-    git clone https://github.com/isaudits/crackpipe
+    git clone --recurse-submodules https://github.com/isaudits/crackpipe
+    # already cloned? pull the submodules with: git submodule update --init
+    make -C tools/princeprocessor/src   # builds the PRINCE binary (pp*.bin)
+    make -C tools/hashcat-utils         # builds hashcat-utils (combinator.bin, expander.bin, ...)
     cd config
     cp config.example config.cfg
     

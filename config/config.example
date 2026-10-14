@@ -25,7 +25,8 @@ temporary_potfile=false
 path=/usr/local/bin/
 bin=hashcat
 tuning=--force -O
-utils_path=/Passwords/hashcat-utils
+# utils_path: "auto" uses the bundled tools/hashcat-utils submodule; or set a path.
+utils_path=auto
 # rules_path/masks_path are optional. "auto" detects them from the hashcat
 # install (any install method); you can also give an absolute path or one
 # relative to the repo root (the bundled rules/ and masks/ dirs).
@@ -42,3 +43,11 @@ max_length=7
 # Defaults to OneRuleToRuleThemAll.rule, best66.rule, dive.rule when unset.
 [recycle]
 rules=["OneRuleToRuleThemAll.rule", "best66.rule", "dive.rule"]
+
+# Optional. Top Mask attack (PACK statsgen/maskgen -> time-boxed hcmask).
+# pack_path defaults to the bundled tools/PACK dir; override to use PACK elsewhere.
+[topmask]
+#pack_path=tools/PACK
+target_time=14400
+pps=14000000000
+min_length=7

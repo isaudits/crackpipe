@@ -38,7 +38,8 @@ class Attack:
         self.hashcat_path = ''
         self.rules_path = ''
         self.masks_path = ''
-        
+        self.utils_path = ''
+
         
         self.read_config()
 
@@ -61,6 +62,8 @@ class Attack:
         # the hashcat install). May also be absolute or relative to the repo.
         self.rules_path = self.resolve_data_path(self.config.get("hashcat", "rules_path", fallback="auto"), "rules")
         self.masks_path = self.resolve_data_path(self.config.get("hashcat", "masks_path", fallback="auto"), "masks")
+        # utils_path: "auto"/unset -> the bundled hashcat-utils submodule
+        self.utils_path = self.resolve_vendored(self.config.get("hashcat", "utils_path", fallback="auto"), "tools/hashcat-utils")
 
         
         if self.config.getboolean("hashcat", "temporary_potfile", fallback=False):
@@ -127,6 +130,21 @@ class Attack:
             return candidate
         repo_rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "rules")
         return os.path.normpath(os.path.join(repo_rules, name))
+
+    def resolve_vendored(self, value, default_rel):
+        '''
+        Resolve a path to a vendored tool (hashcat-utils, PACK, ...). Accepts:
+          - "auto" or unset: the bundled copy at default_rel (under the repo root)
+          - an absolute path: used as-is
+          - a relative path: resolved against the repo root
+        '''
+        repo_root = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
+        value = (value or '').strip()
+        if not value or value.lower() == 'auto':
+            return os.path.normpath(os.path.join(repo_root, default_rel))
+        if os.path.isabs(value):
+            return value
+        return os.path.normpath(os.path.join(repo_root, value))
 
     def resolve_data_path(self, value, subdir):
         '''

@@ -1,0 +1,6 @@
+[submodule "princeprocessor"]
+	path = tools/princeprocessor
+	url = https://github.com/hashcat/princeprocessor.git
+[submodule "tools/hashcat-utils"]
+	path = tools/hashcat-utils
+	url = https://github.com/hashcat/hashcat-utils.git
