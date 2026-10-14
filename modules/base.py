@@ -13,6 +13,7 @@ import os
 import shutil
 from core import messages
 from core import cracker
+from core import util
 
 class Attack:
     def __init__(self,hash_list, hash_type=1000):
@@ -301,21 +302,10 @@ class Attack:
             
     def decode_hex(self, value):
         '''
-        hashcat wraps a plaintext in $HEX[...] when it contains bytes it can't
-        print (non-ASCII, or a literal colon). Decode it back to text so results
-        and recycled dictionaries hold the real password, not the wrapper.
+        Unwrap hashcat's $HEX[...] plaintext so results and recycled
+        dictionaries hold the real password. See core.util.decode_hex.
         '''
-        match = re.fullmatch(r'\$HEX\[([0-9a-fA-F]*)\]', value or '')
-        if not match:
-            return value
-        try:
-            raw = bytes.fromhex(match.group(1))
-        except ValueError:
-            return value
-        try:
-            return raw.decode('utf-8')
-        except UnicodeDecodeError:
-            return raw.decode('latin-1')
+        return util.decode_hex(value)
 
     def process_hash(self, hash, user, password, plaintext=""):
         '''plaintext variable is for simple output where hashes are not stored in
