@@ -25,7 +25,7 @@ class Attack:
         self.config_file = 'config/config.cfg'
         self.job_id = str(int(time.time()))
         self.hash_list = hash_list
-        self.hash_type = hash_type
+        self.hash_type = str(hash_type)
         self.commands = []
         self.processes = {}
         self.hashes = {}
@@ -39,6 +39,15 @@ class Attack:
         
         
         self.read_config()
+
+        # Auto-detect the hashcat mode when the user left the type at the
+        # default. Must happen before hcat_base_cmd / build_commands() below,
+        # since those bake -m {hash_type} into every command.
+        if self.hash_type == '1000':
+            detected = self.detect_hash_type()
+            if detected:
+                print("Auto-detected hash type: -m " + detected)
+                self.hash_type = detected
 
         self.hashcat_path = self.config.get("hashcat", "path")
         self.hashcat_bin = self.config.get("hashcat", "bin")
@@ -98,6 +107,29 @@ class Attack:
         '''
         return True
     
+    def detect_hash_type(self):
+        '''
+        Inspect the first hash and return the matching hashcat mode as a string,
+        or None if the format isn't recognized. Used to override the default
+        mode when the user didn't explicitly specify one.
+
+        Regex for various hash types: https://github.com/psypanda/hashID/blob/master/prototypes.json
+        '''
+        if not self.hash_list:
+            return None
+
+        sample = self.hash_list[0]
+
+        ### NetNTLMv2 - user::domain:serverchallenge:ntproofstr:blob
+        if re.search(r".*:.*:.*:[a-z0-9A-Z]{16}:[a-z0-9A-Z]{32}:[a-z0-9A-Z]*", sample):
+            return '5600'
+
+        ### PWDUMP / NTLM - user:uid:lm:ntlm:::
+        if re.search(r"[a-z0-9A-Z]{32}:[a-z0-9A-Z]{32}:::", sample):
+            return '1000'
+
+        return None
+
     def process_hash_list(self):
         ### Note - Regex for various hash types: https://github.com/psypanda/hashID/blob/master/prototypes.json
         
