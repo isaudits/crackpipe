@@ -231,7 +231,7 @@ class Attack:
                 #del self.hashes[k]
 
             #remove found hashes from hash list
-            for line in self.hash_list:
+            for line in list(self.hash_list):
                 if re.search(hash, line):
                     self.hash_list.remove(line)
     

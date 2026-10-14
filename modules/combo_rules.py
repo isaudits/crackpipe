@@ -25,7 +25,7 @@ class Attack(base.Attack):
         commands += rules_hob064.Attack(self.hash_list, self.hash_type).commands
         
         from modules import rules_passwordspro
-        commands += rules_hob064.Attack(self.hash_list, self.hash_type).commands
+        commands += rules_passwordspro.Attack(self.hash_list, self.hash_type).commands
         
         from modules import rules_T0XlC
         commands += rules_T0XlC.Attack(self.hash_list, self.hash_type).commands

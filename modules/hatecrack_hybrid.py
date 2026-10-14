@@ -37,7 +37,7 @@ class Attack(base.Attack):
                         )
         
         # append 4 digit / symbol
-        commands.append("{hcat_base_cmd} -a 6 -1 ?s?d {wordlist}".format(
+        commands.append("{hcat_base_cmd} -a 6 -1 ?s?d {wordlist} ?1?1?1?1".format(
                             hcat_base_cmd=self.hcat_base_cmd,
                             hcat_path=self.config.get("hashcat", "path"),
                             wordlist=self.config.get("wordlist", "path")+self.config.get("wordlist", "hybrid_list"))
@@ -51,7 +51,7 @@ class Attack(base.Attack):
                         )
         
         # prepend 3 digit / symbol
-        commands.append("{hcat_base_cmd} -a 7 -1 ?s?d ?1?1 {wordlist}".format(
+        commands.append("{hcat_base_cmd} -a 7 -1 ?s?d ?1?1?1 {wordlist}".format(
                             hcat_base_cmd=self.hcat_base_cmd,
                             hcat_path=self.config.get("hashcat", "path"),
                             wordlist=self.config.get("wordlist", "path")+self.config.get("wordlist", "hybrid_list"))

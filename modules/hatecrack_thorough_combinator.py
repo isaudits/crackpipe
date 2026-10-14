@@ -26,8 +26,7 @@ class Attack(base.Attack):
         
         # Use JSON to grab list from config file
         masks = json.loads(self.config.get("masks", "thorough_combinator_masks"))
-        print masks
-        
+
         #regular combinator
         commands.append("{hcat_base_cmd} -a 1 {left} {right}".format(
                             hcat_base_cmd=self.hcat_base_cmd,
