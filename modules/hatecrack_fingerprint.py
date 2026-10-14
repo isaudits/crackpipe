@@ -51,6 +51,4 @@ class Attack(base.Attack):
             if after <= before:
                 break
             before = after
-
-        # Final --show harvests results and cleans up the job's temp files
-        self.output = self.run_pass([self.hcat_base_cmd + " --show"], cleanup=True).output
+        # Results are harvested (and temp files removed) by base.harvest().

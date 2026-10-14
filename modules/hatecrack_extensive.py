@@ -70,4 +70,5 @@ class Attack(base.Attack):
                 if result not in self.results:
                     self.results.append(result)
 
+        self.cracked_count = len(self.results)
         return self.job_id, "Request accepted."

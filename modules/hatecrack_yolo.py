@@ -53,9 +53,4 @@ class Attack(base.Attack):
                 count += 1
         except KeyboardInterrupt:
             print("\nYOLO: stopped after {0} rounds.".format(count))
-
-        # Final --show harvests results and cleans up the job's temp files
-        final = cracker.CrackThread(self.job_id, self.hash_type, self.hash_list, [self.hcat_base_cmd + " --show"], cleanup=True)
-        final.start()
-        final.join()
-        self.output = final.output
+        # Results are harvested (and temp files removed) by base.harvest().

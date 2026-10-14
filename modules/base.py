@@ -32,7 +32,7 @@ class Attack:
         self.processes = {}
         self.hashes = {}
         self.output = ''
-        self.results_regex = '([0-9a-f]{16,}):(.*)' #standard hashcat output of hash:password
+        self.cracked_count = 0
         self.results = []
         self.hashcat_tuning = ''
         self.hashcat_path = ''
@@ -266,33 +266,18 @@ class Attack:
                     handle.write("\n".join(lm_hashes) + "\n")
 
         
-        ### NetNTLMv2 Hashes        
+        ### NetNTLMv2 Hashes
         if re.search(r".*:.*:.*:[a-z0-9A-Z]{16}:[a-z0-9A-Z]{32}:[a-z0-9A-Z]*", self.hash_list[0]):
             print("NetNTLMv2 format detected...")
-            
-            # hashcat returns entire input hash:password; adjust results regex accordingly
-            self.results_regex = '.*:.*:.*:[a-z0-9A-Z]{16}:([a-z0-9A-Z]{32}):[a-z0-9A-Z]*:(.*)'
-            
+
+            # Map each username to its NTproofstr so results can be attributed
+            # back to the user (record_cracked substring-matches it in the
+            # outfile hash).
             for line in self.hash_list:
                 user, a, domain, salt, netntlmv2_hash, blob = line.split(':')
                 key = user
                 self.hashes[key] = netntlmv2_hash.lower()
-        
-        ### WPA2 hashes - set results regex to none; we will pass all results straight through as plaintext
-        if self.hash_type == '2500':
-            # example output from WPA2
-            # a895f7d62ccc3e892fa9e9f9146232c1:aef50f22801c:987bdcf9f950:8381533406003807685881523:hashcat!
-            # ?????:mac-ap:mac-client:essid:password
-            
-            self.results_regex = None
-            
-        ### IKE-PSK hashes - set results regex to none; we will pass all results straight through as plaintext
-        if self.hash_type == '5300' or self.hash_type == '5400':
-            #example output:
-            # g_xr_hex:g_xi_hex:cky_r_hex:cky_i_hex:sai_b_hex:idir_b_hex:ni_b_hex:nr_b_hex:hash:Password
-            
-            self.results_regex = None
-        
+
         # Write the hashes the attack will run against. For PWDUMP this is the
         # deduped NT hashes (so -m 1000 can parse them); otherwise the raw list.
         hashfile_lines = nt_hashes if nt_hashes is not None else self.hash_list
@@ -311,34 +296,39 @@ class Attack:
 
             self.process_hash_list()
             self.run_attack()
-            self.process_output()
+            self.harvest()
 
         return self.job_id, message
 
     def run_attack(self):
         '''
-        Run the module's command list in a single CrackThread pass, capturing the
-        output. Multi-pass attacks (e.g. fingerprint) override this to loop,
-        using CrackThread(cleanup=False) and cracked_count() between passes.
+        Run the module's command list in a single CrackThread pass (leaving the
+        job's temp files in place for harvest()). Multi-pass attacks (e.g.
+        fingerprint) override this to loop, using CrackThread(cleanup=False) and
+        cracked_count() between passes.
         '''
-        self.crack_thread = cracker.CrackThread(self.job_id, self.hash_type, self.hash_list, self.commands)
-        self.crack_thread.start()
+        self.run_commands(self.commands)
 
-        # Join the thread so it does not terminate until this function does
-        # otherwise, we can't get the output
-        self.crack_thread.join()
-        self.output = self.crack_thread.output
+    def run_commands(self, commands):
+        '''Run one CrackThread pass over `commands` without cleanup; returns the thread.'''
+        thread = cracker.CrackThread(self.job_id, self.hash_type, self.hash_list, commands, cleanup=False)
+        thread.start()
+        thread.join()
+        self.output = thread.output
+        return thread
 
-    def process_output(self):
-        
-        if self.results_regex:
-            for r in re.finditer(self.results_regex, self.output, re.MULTILINE):
-                #self.results.append((r.group(1), r.group(2)))
-                self.process_hash(r.group(1), "", r.group(2))
-        else:
-            # no regex - process as plaintext
-            self.process_hash("","","",self.output)
-            
+    def harvest(self):
+        '''
+        Record results from the authoritative cracked file: dump everything the
+        potfile holds for these hashes to {job}.out via --show, parse it, update
+        results and the remaining hash list, then remove the job's temp files.
+        Reading hashcat's outfile (rather than scraping stdout) keeps results
+        clean and works for every hash type, including WPA/IKE.
+        '''
+        thread = self.run_commands([self.hcat_base_cmd + " --show -o [outfile]"])
+        self.record_cracked(thread.read_cracked())
+        thread.remove_temp_files()
+
     def decode_hex(self, value):
         '''
         Unwrap hashcat's $HEX[...] plaintext so results and recycled
@@ -346,31 +336,39 @@ class Attack:
         '''
         return util.decode_hex(value)
 
-    def process_hash(self, hash, user, password, plaintext=""):
-        '''plaintext variable is for simple output where hashes are not stored in
-        the hash table (such as wifi hashes); if this is the case, just append
-        output in plaintext field to the results table and spit it out!
+    def record_cracked(self, cracked):
         '''
+        Turn (hash, plaintext) pairs from the cracked file into results and drop
+        the cracked hashes from the remaining list. Maps a hash back to its
+        username via self.hashes when known (exact, or substring for formats like
+        NetNTLMv2 where the stored value is part of the outfile hash); otherwise
+        the hash itself is used as the key.
+        '''
+        hash_to_users = {}
+        for user, value in self.hashes.items():
+            hash_to_users.setdefault(value.lower(), []).append(user)
 
-        password = self.decode_hex(password)
-        plaintext = self.decode_hex(plaintext)
+        for hashfield, plain in cracked:
+            key = hashfield.lower()
+            users = hash_to_users.get(key)
+            if not users:
+                for value, value_users in hash_to_users.items():
+                    if value and value in key:
+                        users = value_users
+                        break
 
-        if plaintext:
-            if not plaintext in self.results:
-                self.results.append(plaintext)
-        
-        key = user
-        for k,v in self.hashes.items():
-            if v == hash or k == key:
-                hash = v
-                self.results.append((k, password))
-                #del self.hashes[k]
+            for name in (users if users else [hashfield]):
+                entry = (name, plain)
+                if entry not in self.results:
+                    self.results.append(entry)
 
-            #remove found hashes from hash list
+            # drop the cracked hash from the remaining list
             for line in list(self.hash_list):
-                if re.search(hash, line):
+                if key in line.lower():
                     self.hash_list.remove(line)
-    
+
+        self.cracked_count = len(cracked)
+
     def show_results(self):
         print("\nResults of cracking session " + self.job_id +":")
         print("-"*80)
@@ -381,4 +379,5 @@ class Attack:
             else:
                 print(result[0] + ":" + result[1])
         print("-"*80)
+        print("Cracked {0} of {1} hashes.".format(self.cracked_count, self.cracked_count + len(self.hash_list)))
         print('\n')

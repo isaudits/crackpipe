@@ -136,12 +136,33 @@ class CrackThread(threading.Thread):
 
         if self.cleanup:
             print("\n\nCracking session " + self.job_id + " is complete...")
+            self.remove_temp_files()
 
-            # remove temp files which start with the current job ID
-            files = os.listdir(".")
-            for file in files:
-                if file.startswith(self.job_id+"."):
-                    os.remove(file)
+    def remove_temp_files(self):
+        '''Remove this job's temp files ({job}.*) from the working directory.'''
+        for file in os.listdir("."):
+            if file.startswith(self.job_id + "."):
+                os.remove(file)
+
+    def read_cracked(self):
+        '''
+        Parse the cracked output file ({job}.out) into (hash, plaintext) pairs.
+        The outfile format is hash[:salt]:plain; the plaintext is the field after
+        the final ':' (hashcat $HEX[...]-wraps any plaintext containing a colon),
+        and the rest is the hash. $HEX[...] plaintext is decoded.
+        '''
+        entries = []
+        try:
+            with open(os.path.join(os.getcwd(), self.out_file), "r", errors="replace") as handle:
+                for line in handle:
+                    line = line.rstrip("\n")
+                    if not line or ":" not in line:
+                        continue
+                    hashfield, plain = line.rsplit(":", 1)
+                    entries.append((hashfield, util.decode_hex(plain)))
+        except FileNotFoundError:
+            pass
+        return entries
         
 
         

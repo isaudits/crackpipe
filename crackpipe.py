@@ -95,12 +95,8 @@ def show_results():
     global hash_list
     global results
     
-    '''
-    TODO / note:
-        counts are wrong for WPA hashes because there isnt a good way to remove the hashfile
-        from the hash list so it gets counted in count_fail even if successful. Also, what if more than
-        1 hash in the file???
-    '''
+    # Cracked hashes are recorded from hashcat's outfile (base.record_cracked)
+    # and removed from the remaining list for every hash type, including WPA.
     count_success = len(results)
     count_fail = len(hash_list)
     count_all = count_success + count_fail
