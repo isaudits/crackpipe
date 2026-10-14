@@ -56,3 +56,8 @@ min_length=7
 # stops early once a pass cracks nothing new).
 [fingerprint]
 max_iterations=10
+
+# Optional. YOLO combinator rounds. 0 = run until Ctrl-C (hate_crack behavior);
+# set a positive number to cap the random-wordlist-pair rounds.
+[yolo]
+iterations=0
