@@ -114,6 +114,20 @@ class Attack:
             return candidate
         return shutil.which(self.hashcat_bin) or shutil.which('hashcat') or candidate
 
+    def resolve_rule(self, name):
+        '''
+        Resolve a rule file name to a usable path. An absolute path or one with a
+        directory component is used as-is; a bare name is looked up in rules_path
+        (the hashcat install) first, then the repo's bundled rules/ dir.
+        '''
+        if os.path.isabs(name) or os.sep in name:
+            return name
+        candidate = os.path.join(self.rules_path, name)
+        if os.path.isfile(candidate):
+            return candidate
+        repo_rules = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "rules")
+        return os.path.normpath(os.path.join(repo_rules, name))
+
     def resolve_data_path(self, value, subdir):
         '''
         Resolve a configured rules/masks path. Accepts:

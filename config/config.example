@@ -36,3 +36,9 @@ masks_path=auto
 [bruteforce]
 min_length=1
 max_length=7
+
+# Optional. Rules the recycle attack runs cracked passwords back through.
+# JSON list of rule names; resolved against rules_path then the bundled rules/.
+# Defaults to OneRuleToRuleThemAll.rule, best66.rule, dive.rule when unset.
+[recycle]
+rules=["OneRuleToRuleThemAll.rule", "best66.rule", "dive.rule"]
